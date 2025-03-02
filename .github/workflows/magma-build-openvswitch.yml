@@ -48,7 +48,7 @@ jobs:
       repository: magma-packages-test
       distribution: ${{ inputs.distribution || 'focal-ci' }}
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+      - uses: actions/checkout@v4
 
       - name: Build openvswitch
         working-directory: third_party/gtp_ovs/ovs-gtp-patches/2.15

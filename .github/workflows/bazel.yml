@@ -92,7 +92,7 @@ jobs:
         # This is necessary for overlays into the Docker container below.
         # The value of fetch-depth needs to exceed the maximum number of commits
         # on all PRs. This is needed for bazel-diff to check out the merge-base.
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        uses: actions/checkout@v4
         with:
           fetch-depth: 100
       - name: Setup Bazel Base Image
@@ -243,7 +243,7 @@ jobs:
           echo "needs.bazel_diff.outputs.cc_unit_test_targets: ${{ needs.bazel_diff.outputs.cc_unit_test_targets }}"
       - name: Check Out Repo
         # This is necessary for overlays into the Docker container below.
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        uses: actions/checkout@v4
       - name: Maximize build space
         uses: ./.github/workflows/composite/maximize-build-space
       - name: Setup Bazel Docker Image
@@ -330,13 +330,13 @@ jobs:
           mkdir -p lte/gateway/test_results/
           python3 lte/gateway/python/scripts/runtime_report.py -i "[^\/]+\.xml" -w "bazel_unit_test_results" -o "lte/gateway/test_results/merged_unit_test_reports.xml"
       - name: Publish bazel test profile
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() && github.event.inputs.publish_bazel_profile == 'true' }}
         with:
           name: Bazel test all profile ${{ matrix.bazel-config }}
           path: Bazel_test_all_profile
       - name: Upload Bazel unit-test results ${{ matrix.bazel-config }}
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Bazel unit-test results ${{ matrix.bazel-config }}
@@ -429,7 +429,7 @@ jobs:
     steps:
       - name: Check Out Repo
         # This is necessary for overlays into the Docker container below.
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        uses: actions/checkout@v4
       - name: Run starlark format check
         shell: bash
         run: |
@@ -460,7 +460,7 @@ jobs:
     steps:
       - name: Check Out Repo
         # This is necessary for overlays into the Docker container below.
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        uses: actions/checkout@v4
       - name: Maximize build space
         uses: ./.github/workflows/composite/maximize-build-space
       - name: Setup Bazel Docker Image
@@ -546,7 +546,7 @@ jobs:
     steps:
       - name: Check Out Repo
         # This is necessary for overlays into the Docker container below.
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        uses: actions/checkout@v4
       - name: Maximize build space
         uses: ./.github/workflows/composite/maximize-build-space
       - name: Setup Bazel Docker Image
@@ -590,7 +590,7 @@ jobs:
             mv ./bazel-bin/lte/gateway/c/session_manager/sessiond ./sentry_services/sessiond
 
       - name: Upload services for sentry_release job
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+        uses: actions/upload-artifact@v4
         if: |
           github.repository_owner == 'magma' &&
           ( github.ref_name == 'master' || startsWith(github.ref_name, 'v1.') )
@@ -662,7 +662,7 @@ jobs:
           COMMIT_MESSAGE: ${{ toJSON(github.event.head_commit.message) }}
 
       - name: Publish bazel profile
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+        uses: actions/upload-artifact@v4
         if: |
           always() &&
           github.event.inputs.publish_bazel_profile == 'true'
@@ -697,11 +697,11 @@ jobs:
     name: Sentry release
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - run: mkdir sentry_services
-      - uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7 # pin@v3.0.1
+      - uses: actions/download-artifact@v4
         with:
           name: sentry_services
           path: sentry_services
@@ -767,7 +767,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check Out Repo
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        uses: actions/checkout@v4
       - name: Execute check
         shell: bash
         run: |
@@ -789,7 +789,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Check Out Repo
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+        uses: actions/checkout@v4
       - name: Execute check
         shell: bash
         run: |

@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Check if PR is a Reverted PR
         id: reverted_pr_check
-        uses: actions/github-script@d556feaca394842dc55e4734bf3bb9f685482fa0 # pin@v6.3.3
+        uses: actions/github-script@v7
         with:
           script: |
             if( process.env.PR_TITLE.startsWith('Revert') ) {
@@ -49,7 +49,7 @@ jobs:
           mkdir -p ./pr
           echo -n ${{ steps.reverted_pr_check.outputs.is_reverted_pr }} > ./pr/is_reverted_pr
           echo -n "false" > ./pr/skipped
-      - uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pr
@@ -76,7 +76,7 @@ jobs:
         run: |
           mkdir -p ./pr
           echo -n ${{ github.event.number }} > ./pr/pr_number
-      - uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pr

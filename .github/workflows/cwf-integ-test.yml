@@ -27,7 +27,7 @@ jobs:
     if: github.repository_owner == 'magma' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+      - uses: actions/checkout@v4
       - name: Maximize build space
         uses: ./.github/workflows/composite/maximize-build-space
       - name: Run docker compose
@@ -44,7 +44,7 @@ jobs:
           docker save cwf_cwag_go:latest  | gzip > cwf_cwag_go.tar.gz
           docker save cwf_gateway_go:latest | gzip > cwf_gateway_go.tar.gz
           docker save cwf_gateway_pipelined:latest | gzip > cwf_gateway_pipelined.tar.gz
-      - uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: docker-images
           path: images
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-build
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
       - name: Free Disk Space (Ubuntu)
@@ -77,12 +77,12 @@ jobs:
           # when set to "true" but frees about 6 GB
           tool-cache: true
       - name: Cache ubuntu generic box for CWF VMs
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # pin@v3.0.11
+        uses: actions/cache@v4
         with:
           path: ~/.vagrant.d/boxes/generic-VAGRANTSLASH-ubuntu2004
           key: vagrant-box-generic-ubuntu2004-v4.0.2
       - name: Cache magma-trfserver-box
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7 # pin@v3.0.11
+        uses: actions/cache@v4
         with:
           path: ~/.vagrant.d/boxes/magmacore-VAGRANTSLASH-magma_trfserver
           key: vagrant-box-magma-trfserver-v1.3.20221230
@@ -99,7 +99,7 @@ jobs:
           else
             echo "Vagrant cloud token is not configured. Skipping login."
           fi
-      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # pin@v4.3.0
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10.12'
       - name: Install pre requisites
@@ -107,7 +107,7 @@ jobs:
           pip3 install --upgrade pip
           pip3 install ansible fabric jsonpickle requests PyYAML firebase_admin
           sudo apt install virtualbox
-      - uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7 # pin@v3.0.1
+      - uses: actions/download-artifact@v4
         with:
           name: docker-images
       - uses: geekyeggo/delete-artifact@54ab544f12cdb7b71613a16a2b5a37a9ade990af # pin@v2.0.0
@@ -134,7 +134,7 @@ jobs:
           fab integ-test --destroy-vm --transfer-images --test-result-xml=tests.xml --rerun-fails=3 --skip-docker-load --tar-path="/tmp/cwf-images"
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: cwf/gateway/tests.xml
@@ -154,7 +154,7 @@ jobs:
           cp *.log logs/
       - name: Upload logs
         if: always()
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-logs
           path: cwf/gateway/logs

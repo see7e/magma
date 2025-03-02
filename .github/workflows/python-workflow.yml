@@ -40,7 +40,7 @@ jobs:
       files_changed: ${{ steps.changes.outputs.filesChanged_files }}
     steps:
       # Need to get git on push event
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+      - uses: actions/checkout@v4
         if: github.event_name == 'push'
       - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # pin@v2.11.1
         id: changes
@@ -57,7 +57,7 @@ jobs:
           echo -n ${{ github.event.number }} > ./pr/pr_number
           echo -n ${{ steps.changes.outputs.filesChanged == 'false' }} > ./pr/skipped
           echo -n "false" > ./pr/is_reverted_pr
-      - uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pr
@@ -69,7 +69,7 @@ jobs:
     name: Python Format Check
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # pin@v3.1.0
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Build the python-precommit Docker base image
@@ -103,7 +103,7 @@ jobs:
         run: |
           mkdir -p ./pr
           echo ${{ github.event.number }} > ./pr/pr_number
-      - uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # pin@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pr
