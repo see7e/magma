@@ -56,21 +56,31 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y software-properties-common curl
+
       - name: Maximize build space
         uses: ./.github/workflows/composite/maximize-build-space
-      - uses: ./.github/workflows/composite/docker-builder
+
+      - name: Build Docker Image
+        uses: ./.github/workflows/composite/docker-builder
         with:
           REGISTRY: ${{ env.REGISTRY }}
           IMAGE_STREAM: ${{ env.IMAGE_STREAM_BAZEL_BASE }}
           IMAGE_TAGS: ${{ env.IMAGE_TAGS }}
           DOCKERFILE: ${{ env.DOCKERFILE_BAZEL_BASE }}
           PUSH_TO_REGISTRY: ${{ github.event_name == 'push' && github.ref_name == 'master' && github.token != null }}
+
       - name: Build space left after run
         shell: bash
         run: |
           echo "Available storage:"
           df -h
-      - name: Notify failure to slack
+
+      - name: Notify failure to Slack
         if: failure() && github.event_name != 'pull_request' && github.repository_owner == 'magma'
         uses: rtCamp/action-slack-notify@12e36fc18b0689399306c2e0b3e0f2978b7f1ee7 # pin@v2.2.0
         env:
@@ -81,6 +91,7 @@ jobs:
           SLACK_COLOR: "#FF0000"
           SLACK_FOOTER: ' '
           MSG_MINIMAL: actions url,commit
+
 
   build_dockerfile_devcontainer:
     needs: build_dockerfile_bazel_base

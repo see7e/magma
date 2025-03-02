@@ -74,21 +74,36 @@ jobs:
       GO111MODULE: 'on'
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-distutils jq
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.8.10'
+
+      - name: Ensure missing test configs exist
+        run: |
+          mkdir -p /etc/magma/configs/orc8r
+          touch /etc/magma/configs/orc8r/some_indexerid_0.yml
+          echo "{}" > /etc/magma/configs/orc8r/some_indexerid_0.yml
+
       - name: deploy-sync-checkin
         if: always()
         id: deploy-sync-checkin
         run: |
           cd ${MAGMA_ROOT}/orc8r/cloud/deploy/orc8r_deployer/docker
           ./run_deployer.bash --deploy-dir /tmp/deploy_dir --build --test check_all
+
       - name: Lint cloud Go code
         if: always()
         id: cloud-lint-lint
         run: |
           cd ${MAGMA_ROOT}/orc8r/cloud/docker
           python3 build.py --lint
+
       - name: Generate test coverage
         if: always() && steps.cloud-lint-lint.outcome=='success'
         id: cloud-lint-cov
@@ -115,24 +130,27 @@ jobs:
         with:
           name: Unit Test Results
           path: "${{ env.MAGMA_ROOT}}/orc8r/cloud/test-results/*"
+
       - uses: actions/setup-go@v5
         if: always()
         id: gateway_test_init
         with:
-          go-version: '1.20.1'
-      - name: Download dependencies
+          go-version: '1.21'
+      - name: Download Go dependencies
         if: always() && steps.gateway_test_init.outcome=='success'
         id: gateway_test_dep
         run: |
           cd cwf/gateway
+          go mod tidy
           go mod download
-      - name: Gateway go tests
+      - name: Gateway Go tests
         if: always() && steps.gateway_test_dep.outcome=='success'
         id: gateway_test
         run: |
           cd ${MAGMA_ROOT}/orc8r/gateway/go
           go test ./...
           go vet ./...
+
       - name: Notify failure to Slack for deploy-sync-checkin
         if: steps.deploy-sync-checkin.outcome=='failure' && github.event_name == 'push'
         uses: rtCamp/action-slack-notify@12e36fc18b0689399306c2e0b3e0f2978b7f1ee7 # pin@v2.2.0

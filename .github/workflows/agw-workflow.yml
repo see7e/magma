@@ -58,6 +58,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
+      - name: Install dependencies (fix missing distutils)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-distutils
       - name: Check clang-format for orc8r/gateway/c
         uses: DoozyX/clang-format-lint-action@9ea72631b74e61ce337d0839a90e76180e997283 # pin@v0.13
         with:

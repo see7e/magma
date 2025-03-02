@@ -12,7 +12,7 @@
 ################################################################
 # Builder Image (can also be used as developer's image)
 ################################################################
-FROM ubuntu:focal as bazel_builder
+FROM ubuntu:focal AS bazel_builder
 
 ARG DEB_PORT=amd64
 
@@ -68,7 +68,8 @@ RUN echo "Install general purpose packages" && \
         uuid-dev `# dependency of liagent` \
         vim \
         wget \
-        zip
+        zip \
+        software-properties-common
 
 RUN apt-get install -y --no-install-recommends \
         libtool=2.4.6-14 && \
