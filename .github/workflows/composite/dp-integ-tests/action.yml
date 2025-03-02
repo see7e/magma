@@ -26,11 +26,21 @@ runs:
   steps:
     - uses: actions/checkout@v4
 
-    - name: Install dependencies (docker-compose fix)
+    - name: Install dependencies
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker-compose python3-distutils
+        sudo apt-get install -y python3-distutils
+
+    - name: Try to use the symlink for docker-compose
+      shell: bash
+      run: |
+        if [ -L /usr/bin/docker-compose ]; then
+          echo "Using symlink for docker"
+        else
+          echo "Creating symlink for docker"
+          sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+        fi
 
     - name: Set env
       shell: bash
@@ -70,22 +80,14 @@ runs:
       if: always()
       shell: bash
       run: >-
-        mkdir -p ${{ inputs.test_dir }}/k8s-pods-logs;
-        kubectl get pods -o custom-columns=NAME:.metadata.name --no-headers | while read -r pod; do
-          echo "Collecting logs for $pod..."
-          kubectl logs --timestamps=true "$pod" > "${{ inputs.test_dir }}/k8s-pods-logs/${pod}.log" || echo "Failed to get logs for $pod"
-        done
+        mkdir ${{ inputs.test_dir }}/k8s-pods-logs; for pod in $(kubectl get pods -o custom-columns=NAME:.metadata.name --no-headers); do
+          kubectl logs --timestamps=true $pod > ${{ inputs.test_dir }}/k8s-pods-logs/${pod}.log;
 
     - name: Collect Elasticsearch data (check if pod exists)
       if: always()
       shell: bash
       run: |
-        ES_POD=$(kubectl get pods -o custom-columns=NAME:.metadata.name | grep elasticsearch || echo "")
-        if [[ -n "$ES_POD" ]]; then
-          kubectl exec "$ES_POD" -- curl -s localhost:9200/dp-*/_search?size=200 > "${{ inputs.test_dir }}/elasticsearch-data.json"
-        else
-          echo "No Elasticsearch pod found, skipping data collection."
-        fi
+        kubectl exec $(kubectl get pods -o custom-columns=NAME:.metadata.name | grep elasticsearch) -- curl localhost:9200/dp-*/_search?size=200 >  ${{ inputs.test_dir }}/elasticsearch-data.json
 
     - name: Upload integration test results
       if: always()
