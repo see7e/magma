@@ -1,0 +1,101 @@
+name: PR needs documentation
+
+# This worflow is based on the QGIS version with some changes.
+# A message will be added to the PR to ping the author about her/his responsibility to handle the documentation issue
+# an issue is automatically created in the magm-Documentation repository when the PR gets merged.
+
+# TODO:
+#   - [ ] Create lable tag
+#   - [ ] Create Documentation repo
+#   - [ ] Check if the milestone script is needed
+#   - [ ] Decide on how to configure "bot" account
+#   - [ ] Set GH_TOKEN_BOT in the secrets
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - closed
+      - labeled
+
+env:
+    DOCS_LABEL: "component: docs"
+    NEED_DOCS_LABEL: "Needs Documentation"
+    DOCUMENTATION_REPO: "https://github.com/magma/documentation"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  ping-author-message:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    name: Write comment to ping author about the pull request description
+    steps:
+      - name: Create comment about documentation
+        if: contains(github.event.pull_request.labels.*.name, env.NEED_DOCS_LABEL)
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GH_TOKEN_BOT }} # BOT TOKEN
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            @${{ github.event.pull_request.user.login }}
+            This pull request has been tagged as **requiring documentation**.
+
+            A documentation ticket will be opened at [Magma Documentation](${{ env.DOCUMENTATION_REPO }}) **when this PR is merged**.
+
+            **Please update the description** (not the comments) with helpful details and screenshots to help the documentation team.
+            Also, any commit having `[needs-doc]` or `[Needs Documentation]` in will see its message pushed to the issue, so please be as verbose as you can.
+
+            Thank you!
+          reactions: 'book'
+
+  create-doc-issue:
+    if: github.event.pull_request.merged && contains(github.event.pull_request.labels.*.name, env.NEED_DOCS_LABEL)
+    runs-on: ubuntu-latest
+    name: Create issue on doc repo for labeled issue
+    steps:
+      # Get the PR body
+      - name: Get PR body as text
+        id: get_pr_body
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo 'body<<EOF' >> $GITHUB_OUTPUT
+          echo "${{ github.event.pull_request.body }}" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      # Create the documentation issue
+      - name: Create Documentation issue
+        id: doc_issue
+        uses: dacbd/create-issue-action@v2.0.0
+        with:
+          token: ${{ secrets.GH_TOKEN_BOT }}
+          owner: magma
+          repo: documentation
+          title: ${{ format('{0} (Request in Magma)', github.event.pull_request.title) }}
+          body: |
+            ### Request for documentation
+            From pull request magma/magma#${{ github.event.pull_request.number }}
+            Author: @${{ github.event.pull_request.user.login }}
+
+            **${{ github.event.pull_request.title }}**
+
+            ### PR Description:
+            ${{ steps.get_pr_body.outputs.body }}
+          assignees: ${{ github.event.pull_request.user.login }}
+
+      # Write comment to ping the PR author
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GH_TOKEN_BOT }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            @${{ github.event.pull_request.user.login }}
+            A documentation ticket has been opened at [Magma Documentation Issue](${{ env.DOCUMENTATION_REPO }}/issues/${{ steps.doc_issue.outputs.number }}).
+            It is **your** responsibility to visit this ticket and add as much detail as possible for the documentation team to correctly document this change.
+            Thank you!
+          reactions: 'rocket'
